@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancelable Biometric Template Protection</title>
+<style>
+:root{--bg:#0b1020;--panel:#141c30;--panel2:#10182a;--text:#eef3ff;--muted:#aab6d3;--accent:#7c9cff;--good:#42d392;--bad:#ff7373;--border:#293654}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b1020,#101b32);font-family:Inter,system-ui,Arial,sans-serif;color:var(--text)}
+main{max-width:1050px;margin:auto;padding:28px 18px 50px}.hero{padding:28px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(120deg,#172443,#131a2c);margin-bottom:18px}
+h1{margin:0 0 10px;font-size:clamp(26px,4vw,38px)}h2{font-size:18px;margin:0 0 14px}.sub{color:var(--muted);line-height:1.55}.tag{display:inline-block;padding:6px 10px;border-radius:99px;background:#24345a;color:#c9d7ff;font-size:12px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:rgba(20,28,48,.96);border:1px solid var(--border);border-radius:18px;padding:20px;min-width:0}.full{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font:inherit}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer;background:var(--accent);color:#081126;margin-top:12px}button.secondary{background:#283653;color:var(--text)}button.danger{background:#502a39;color:#ffdce3}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions button{flex:1;min-width:130px}
+.status{margin-top:12px;padding:12px;border-radius:10px;background:#10182a;color:var(--muted);line-height:1.5}.status.good{border:1px solid #286c55;color:#9cf0c9}.status.bad{border:1px solid #77404a;color:#ffc0c0}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.metric{padding:14px;background:#10182a;border-radius:12px;border:1px solid var(--border)}.metric b{display:block;font-size:22px;margin-top:5px;overflow-wrap:anywhere}.metric span{color:var(--muted);font-size:12px}
+.fingerprint{height:115px;display:grid;place-items:center;color:#9eb6ff;background:radial-gradient(circle,#24375c,#10182a 70%);border-radius:14px;margin:10px 0}.fingerprint svg{width:78px;height:78px}
+.template{font-family:ui-monospace,monospace;overflow-wrap:anywhere;word-break:break-all;background:#0b1120;border:1px solid var(--border);border-radius:10px;padding:12px;color:#b9ccff;min-height:60px;line-height:1.7}
+.log{max-height:200px;overflow:auto;font-size:13px;color:var(--muted);line-height:1.6}.log p{border-bottom:1px solid #25304a;padding-bottom:7px}
+.note{font-size:12px;color:var(--muted);line-height:1.55;margin-top:14px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.metrics{grid-template-columns:1fr}.hero{padding:20px}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+  <span class="tag">ACADEMIC PROJECT DEMO</span>
+  <h1>Cancelable Biometric Template Protection</h1>
+  <p class="sub">Explore synthetic fingerprint feature enrollment, protected-template matching, and cancellation/renewal. No real fingerprint is captured or uploaded.</p>
+  <div class="fingerprint" aria-label="Illustrative fingerprint icon">
+  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+  <path d="M50 12c-22 0-37 16-37 37M50 22c-16 0-27 12-27 28M50 32c-10 0-17 8-17 18 0 17-4 27-10 35M50 42c-5 0-8 4-8 9 0 17-3 29-9 38M50 12c22 0 37 16 37 37 0 17-4 30-11 40M50 22c16 0 27 12 27 28 0 15-3 26-8 35M50 32c10 0 17 8 17 18 0 13-2 24-7 34M50 52c0 17-1 30-5 40"/>
+  </svg></div>
+</section>
+<div class="grid">
+<section class="card">
+<h2>1. Enroll synthetic user</h2>
+<p class="sub">Create a repeatable sample feature vector and protect it with an application key.</p>
+<label for="userId">Demo user ID</label><input id="userId" value="STUDENT-001" maxlength="40">
+<label for="key">Transformation key</label><input id="key" value="Campus-Key-A" maxlength="100">
+<div class="actions"><button id="enroll">Enroll template</button><button class="secondary" id="newSample">New sample identity</button></div>
+<div id="enrollStatus" class="status">No template enrolled yet.</div>
+</section>
+<section class="card">
+<h2>2. Authenticate</h2>
+<p class="sub">Try a noisy sample of the enrolled synthetic user or a different synthetic identity.</p>
+<label for="threshold">Acceptance threshold: <span id="thresholdLabel">70%</span></label>
+<input id="threshold" type="range" min="50" max="95" value="70" style="padding:0">
+<div class="actions"><button id="genuine">Test genuine user</button><button class="secondary" id="impostor">Test impostor</button></div>
+<div id="authStatus" class="status">Enroll a template to begin authentication.</div>
+</section>
+<section class="card">
+<h2>3. Protected template</h2>
+<div class="metrics">
+<div class="metric"><span>Feature count</span><b>64</b></div>
+<div class="metric"><span>Template length</span><b>64 bits</b></div>
+<div class="metric"><span>Enrollment</span><b id="enrollState">Pending</b></div>
+</div>
+<label>Stored protected template (preview)</label>
+<div id="template" class="template">No template stored</div>
+<p class="note">This browser demo keeps its data in memory only; refreshing the page resets it.</p>
+</section>
+<section class="card">
+<h2>4. Cancel and renew</h2>
+<p class="sub">Revoke the current demo template and generate a replacement with a new key.</p>
+<label for="newKey">Replacement transformation key</label><input id="newKey" value="Campus-Key-B" maxlength="100">
+<div class="actions"><button class="danger" id="revoke">Revoke current template</button><button id="renew">Generate new template</button></div>
+<div id="renewStatus" class="status">No renewal performed.</div>
+</section>
+<section class="card full">
+<h2>Demo activity log</h2>
+<div id="log" class="log"><p>App ready. Start by enrolling a synthetic user.</p></div>
+<button class="secondary" id="reset">Reset demo</button>
+<p class="note"><b>Security limitation:</b> The transformation is an educational illustration, not a validated cancelable-biometric algorithm. It does not establish non-invertibility, unlinkability, or production security. Do not use it for real identity verification.</p>
+</section>
+</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let original = null, protectedTemplate = null, enrolledKey = null, userSeed = 101, revoked = false;
+const N = 64;
+function rng(seed){ // deterministic pseudo-random generator for this educational UI
+  let x = seed >>> 0;
+  return () => { x += 0x6D2B79F5; let t=x; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; };
+}
+function features(seed, noise=0){
+  const r=rng(seed), nr=rng(seed ^ 0xA5A5A5A5);
+  return Array.from({length:N},()=>Math.max(0,Math.min(1,r()+(nr()*2-1)*noise)));
+}
+function keySeed(key){
+  let h=2166136261;
+  for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+function protect(vec,key){
+  const r=rng(keySeed(key)), perm=Array.from({length:vec.length},(_,i)=>i);
+  for(let i=perm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]];}
+  const signs=Array.from({length:vec.length},()=>r()<.5?-1:1);
+  return perm.map((idx,i)=>((vec[idx]-.5)*2*signs[i]>=0)?1:0);
+}
+function sim(a,b){return a&&b?a.reduce((s,v,i)=>s+(v===b[i]?1:0),0)/a.length*100:0;}
+function log(msg){const p=document.createElement('p');p.textContent=new Date().toLocaleTimeString()+' — '+msg;$('log').prepend(p);}
+function status(id,msg,type=''){const el=$(id);el.textContent=msg;el.className='status '+type;}
+function showTemplate(){ $('template').textContent=protectedTemplate?protectedTemplate.join(''):'No active template stored';$('enrollState').textContent=protectedTemplate?'Active':'Pending';}
+$('threshold').addEventListener('input',()=> $('thresholdLabel').textContent=$('threshold').value+'%');
+$('enroll').onclick=()=>{
+ const uid=$('userId').value.trim(), key=$('key').value;
+ if(!uid||!key){status('enrollStatus','Enter a user ID and transformation key.','bad');return;}
+ original=features(userSeed); enrolledKey=key; protectedTemplate=protect(original,key);revoked=false;
+ showTemplate();status('enrollStatus','Enrollment complete for '+uid+'. Protected template generated.','good');
+ status('authStatus','Ready for authentication.');status('renewStatus','Template is active.');
+ log('Enrolled '+uid+' with synthetic features; stored protected representation.');
+};
+function authenticate(isGenuine){
+ if(!protectedTemplate||revoked){status('authStatus','No active template. Enroll or renew first.','bad');return;}
+ const sample=isGenuine?features(userSeed,0.08):features(userSeed+997,0);
+ const candidate=protect(sample,enrolledKey), score=sim(protectedTemplate,candidate), threshold=Number($('threshold').value);
+ const accepted=score>=threshold;
+ const label=isGenuine?'Genuine sample':'Impostor sample';
+ status('authStatus',`${label}: ${score.toFixed(1)}% similarity. Threshold ${threshold}%. Decision: ${accepted?'ACCESS GRANTED':'ACCESS DENIED'}.`,accepted?'good':'bad');
+ log(`${label} scored ${score.toFixed(1)}%; ${accepted?'accepted':'rejected'}.`);
+}
+$('genuine').onclick=()=>authenticate(true);
+$('impostor').onclick=()=>authenticate(false);
+$('newSample').onclick=()=>{
+ userSeed+=13; original=null;protectedTemplate=null;enrolledKey=null;revoked=false;showTemplate();
+ status('enrollStatus','New synthetic identity selected. Enroll it to create a template.');
+ status('authStatus','Enroll the new identity before testing.');status('renewStatus','No renewal performed.');
+ log('Generated a new synthetic identity. Previous active template cleared.');
+};
+$('revoke').onclick=()=>{
+ if(!protectedTemplate||revoked){status('renewStatus','There is no active template to revoke.','bad');return;}
+ protectedTemplate=null;revoked=true;showTemplate();
+ status('renewStatus','Template revoked. Authentication is disabled until a replacement is generated.','good');
+ status('authStatus','Template revoked; authentication disabled.','bad');log('Revoked the active protected template.');
+};
+$('renew').onclick=()=>{
+ if(!original){status('renewStatus','Enroll a user first so a replacement can be generated.','bad');return;}
+ const key=$('newKey').value;
+ if(!key){status('renewStatus','Enter a replacement key.','bad');return;}
+ if(key===enrolledKey){status('renewStatus','Choose a different key for the renewal demo.','bad');return;}
+ protectedTemplate=protect(original,key);enrolledKey=key;revoked=false;showTemplate();
+ status('renewStatus','Replacement template generated with the new key. Old template should be invalidated in a real system.','good');
+ status('authStatus','Renewed template active. Test authentication again.');
+ log('Generated replacement protected template using a different key; previous template is considered invalid.');
+};
+$('reset').onclick=()=>{
+ original=null;protectedTemplate=null;enrolledKey=null;revoked=false;userSeed=101;
+ $('userId').value='STUDENT-001';$('key').value='Campus-Key-A';$('newKey').value='Campus-Key-B';$('threshold').value=70;$('thresholdLabel').textContent='70%';
+ $('log').innerHTML='';showTemplate();status('enrollStatus','No template enrolled yet.');status('authStatus','Enroll a template to begin authentication.');status('renewStatus','No renewal performed.');log('Demo reset.');
+};
+</script>
+</body>
+</html>
